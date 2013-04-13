@@ -52,30 +52,28 @@
     }
 
 
-    // MAIN
-    $listOfServers = array();
-
     // Liste des domaines ainsi que le nom à tester
+    $listOfServers = array();
     // Syntaxe suivante :
     //   $listOfServers['name']['name']  = 'Description';
     //   $listOfServers['name']['url']   = 'www.server.tld';
     //   $listOfServers['name']['port']  = 80;
+    $listOfServers['git']['name'] = 'Github';
+    $listOfServers['git']['url']  = 'github.com';
+    $listOfServers['git']['port'] = 80;
 
-    $listOfServers['hennek']['name'] = 'Github';
-    $listOfServers['hennek']['url']  = 'github.com';
-    $listOfServers['hennek']['port'] = 80;
 
     // Préparation de l'affichage
     // Calcul de la largeur des bulles
     $cptServer = count($listOfServers);
-    if($cptServer % 4 == 0)
-        $width = "width: 25%; *width: 25%;";
-    elseif($cptServer % 4 == 3)
-        $width = "width: 33%; *width: 33%;";
-    elseif($cptServer % 4 == 2)
-        $width = "width: 50%; *width: 50%;";
-    else
+    if($cptServer == 1)
         $width = "width: 100%; *width: 100%;";
+    elseif($cptServer == 2)
+        $width = "width: 50%; *width: 50%;";
+    elseif($cptServer == 3)
+        $width = "width: 33%; *width: 33%;";
+    else
+        $width = "width: 25%; *width: 25%;";
 
     // Création des résultats avant l'affichage
     $result = array();
