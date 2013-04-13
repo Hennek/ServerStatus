@@ -62,7 +62,6 @@
     $listOfServers['git']['url']  = 'github.com';
     $listOfServers['git']['port'] = 80;
 
-
     // Préparation de l'affichage
     // Calcul de la largeur des bulles
     $cptServer = count($listOfServers);
@@ -70,7 +69,7 @@
         $width = "width: 100%; *width: 100%;";
     elseif($cptServer == 2)
         $width = "width: 50%; *width: 50%;";
-    elseif($cptServer == 3)
+    elseif($cptServer % 3 == 0 && $cptServer % 4 != 0)
         $width = "width: 33%; *width: 33%;";
     else
         $width = "width: 25%; *width: 25%;";
@@ -312,31 +311,12 @@
         <h1>Current status servers</h1>
 
         <div class="grid">
-            <?php
-                foreach ($listOfServers as $key => $value):
-                    $class = '';
-                    $status = 'Online';
-
-                    if($result[$key] == -1) {
-                        $class = ' info-bulle-down';
-                        $status = 'Down !';
-                    }
-
-                    if($result[$key] >= 150) {
-                        $class = ' info-bulle-slow';
-                        $status = 'Slow';
-                    }
-
-                    if($result[$key] >= 200) {
-                        $class = ' info-bulle-slow';
-                        $status = 'Very slow';
-                    }
-            ?>
+            <?php foreach ($listOfServers as $key => $value): ?>
             <div class="col">
-            <div class="info-bulle<?php echo $class; ?>" id="block-<?php echo $key; ?>">
+            <div class="info-bulle" id="block-<?php echo $key; ?>">
                 <span>
                     <em><?php echo $value['name']; ?></em>
-                    <span id="status-<?php echo $key; ?>"><?php echo $status; ?></span>
+                    <span id="status-<?php echo $key; ?>">Loading ...</span>
                 </span>
             </div>
             <div class="info-sup">
