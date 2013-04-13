@@ -98,6 +98,12 @@
 
     <link rel="stylesheet" type="text/css" href="css/default.css" />
     <link href="img/favicon.ico" rel="icon" type="image/x-icon" />
+
+    <style>
+        .grid .col {
+            <?php echo $width; ?>
+        }
+    </style>
 </head>
 <body>
 
