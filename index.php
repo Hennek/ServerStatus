@@ -112,7 +112,7 @@
         <h1>Current status servers</h1>
 
         <noscript>
-            <p>Javascript est désactivé. Le site ne pourra pas fonctionne.<br />Activez-le pour pouvoir en profiter !</p>
+            <p>Javascript est désactivé. Le site ne pourra pas fonctionner.<br />Activez-le pour pouvoir en profiter !</p>
         </noscript>
 
         <div class="grid">
