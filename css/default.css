@@ -131,7 +131,6 @@ h1 {
 }
 
 .info-bulle > span {
-    color: ;
     display: block;
     margin-top: 8px;
 
@@ -178,6 +177,12 @@ footer {
 .footer-right {
     float: right;
     text-align: right;
+}
+
+noscript {
+    text-align: center;
+    color: #A03E0D;
+    font-weight: bold;
 }
 
 @media (max-width: 966px) {

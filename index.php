@@ -111,6 +111,10 @@
 
         <h1>Current status servers</h1>
 
+        <noscript>
+            <p>Javascript est désactivé. Le site ne pourra pas fonctionne.<br />Activez-le pour pouvoir en profiter !</p>
+        </noscript>
+
         <div class="grid">
             <?php foreach ($listOfServers as $key => $value): ?>
             <div class="col">
