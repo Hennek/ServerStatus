@@ -2,7 +2,10 @@
     font-family: 'Source Sans Pro';
     font-style: normal;
     font-weight: 200;
-    src: local('Source Sans Pro ExtraLight'), local('SourceSansPro-ExtraLight'), url(http://themes.googleusercontent.com/static/fonts/sourcesanspro/v5/toadOcfmlt9b38dHJxOBGMa9awK0IKUjIWABZIchFI8.woff) format('woff');
+    src: local('Source Sans Pro ExtraLight'),
+         local('SourceSansPro-ExtraLight'),
+         url(static/font/SourceSansPro.woff)
+         format('woff');
 }
 
 html {
@@ -64,7 +67,9 @@ h1 {
     text-align: center;
     color: #fff;
     font-size: 3.1em;
+    font-style: normal;
     margin-bottom: 50px;
+    line-height: 1.5em;
 }
 
 .grid {
@@ -186,6 +191,10 @@ noscript {
 }
 
 @media (max-width: 966px) {
+    section, footer {
+        width: 95%;
+    }
+
     .grid [class*="col"] {
         min-width: 250px;
         width: 50%;
