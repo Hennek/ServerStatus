@@ -21,40 +21,78 @@
  *
  */
 
+    header('Content-Type: text/html; charset=utf-8');
+    header("Set-Cookie: name=value; httpOnly");
+    date_default_timezone_set('Europe/Brussels');
+    setlocale(LC_ALL, 'fr_FR');
+
+    define('_VERSION', '1.1');
+    define('PATH',     'data/');
+    define('CONFIG',   'list.ini');
+
     /**
-     *
+     * Script permettant de lire un fichier de config utilisateur
+     * @param  string    chemin d'accès au dossier du fichier
+     * @return array     tableau contenant chaque ligne du fichier
      */
     function readFileConfig() {
+        $values   = array();
+        $lineFile = file(PATH . CONFIG);
 
+        foreach($lineFile as $line) {
+            // Pour chaque ligne, on casse la chaîne et on stocke
+            // le résultat dans des defines si ce n'est pas un commentaire
+            if(!preg_match('#\#(.*)#isU', $line)) {
+                $infos = explode('=', $line);
+
+                if(count($infos) == 2) {
+                    $infos[1] = str_replace('\n', '', $infos[1]);
+
+                    $key      = trim($infos[0]);
+                    $value    = trim($infos[1]);
+                    $values[] = array($key, $value);
+                }
+            }
+        }
+
+        if(empty($values))
+            return 'empty';
+
+        return $values;
     }
 
     /**
-     *
+     * Permet d'écrire un fichier.
+     * @param  string    le contenu du fichier
+     * @return boolean   statut de l'enregistrement
      */
-    function addLineConfig() {
-
+    function addLineConfig($string) {
+        return file_put_contents(PATH . CONFIG, utf8_decode($string) . "\n", FILE_APPEND);
     }
 
     /**
-     *
+     * Permet d'écrire un fichier.
+     * @return boolean   statut de l'opération
      */
-    function deleteLineConfig() {
-
+    function deleteConfig() {
+        return unlink(PATH . CONFIG);
     }
 
     /**
-     *
+     * Permet de sécuriser les données reçues
+     * @param  string    la chaîne à vérifier
+     * @return string    la chaîne vérifiée
      */
     function secure($str) {
-        return $str;
+        return htmlspecialchars($str);
     }
 
     /**
      * Ping ... Pong :)
-     * @param $domain(string) - domaine à tester
-     * @param $port(int) - port du serveur (80 par défaut)
-     * @param $timeout(int) - timeout (10 par défaut)
-     * @return Temps en ms
+     * @param  string    domaine à tester
+     * @param  int       port du serveur (80 par défaut)
+     * @param  int       timeout (10 par défaut)
+     * @return int       temps en ms
      */
     function pingDomain($domain, $port = 80, $timeout = 10) {
         $starttime = microtime(true);
@@ -76,7 +114,7 @@
     // Liste des domaines ainsi que le nom à tester
     $listOfServers = array();
     // TODO readConfigFile
-    // Syntaxe suivante :
+    // Syntaxe suivante (en attendant la 1.1) :
     //$listOfServers[] = array(
     //                        'name' => 'Description',
     //                        'url'  => 'www.server.tld',
@@ -107,17 +145,17 @@
         $result[$value['name']] = pingDomain($value['url'], $value['port']);
     }
 
-    // Ajouter une entrée du fichier .url
+    // Ajouter une entrée du fichier .ini
     if(isset($_GET['add'])) {
         $add = secure($_GET['add']);
     }
 
-    // Supprimer une entrée du fichier .url
+    // Supprimer une entrée du fichier .ini
     if(isset($_GET['delete'])) {
         $delete = secure($_GET['delete']);
     }
 
-    // Modifier une entrée du fichier .url
+    // Modifier une entrée du fichier .ini
     if(isset($_GET['modify'])) {
         $modify = secure($_GET['modify']);
     }
@@ -187,14 +225,14 @@
         <div class="grid">
             <?php foreach ($listOfServers as $key => $value): ?>
             <div class="col">
-            <div class="info-bulle" id="block-<?php echo $key; ?>">
+            <div class="info-bulle" id="block-<?php echo $value['name']; ?>">
                 <span>
                     <em><?php echo $value['name']; ?></em>
-                    <span id="status-<?php echo $key; ?>">Loading ...</span>
+                    <span id="status-<?php echo $value['name']; ?>">Loading ...</span>
                 </span>
             </div>
             <div class="info-sup">
-                Temps de réponse : <span id="ms-<?php echo $key; ?>">∞</span>ms
+                Temps de réponse : <span id="ms-<?php echo $value['name']; ?>">∞</span>ms
             </div>
             </div>
             <?php endforeach; ?>
@@ -203,7 +241,7 @@
 
     <footer class="dashed clear">
         <div class="footer-right">
-            CopyLeft (Beerware) <?php echo date('Y', time()); ?> — <a href="https://twitter.com/Hennek_">Hennek</a> — v1.1<br />
+            CopyLeft (<a href="https://github.com/Hennek/ServerStatus/blob/master/LICENSE">MIT</a>) <?php echo date('Y', time()); ?> — <a href="https://twitter.com/Hennek_">Hennek</a> — v<?php echo _VERSION; ?><br />
             <a href="https://github.com/Hennek/ServerStatus/issues">Report Issue</a> •
             <a href="https://github.com/Hennek/ServerStatus">Source</a>
         </div>
