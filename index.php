@@ -148,24 +148,32 @@
     // Ajouter une entrée du fichier .ini
     if(isset($_GET['add'])) {
         $add = secure($_GET['add']);
+
+        // TODO
     }
 
     // Supprimer une entrée du fichier .ini
     if(isset($_GET['delete'])) {
         $delete = secure($_GET['delete']);
+
+        // TODO
     }
 
     // Modifier une entrée du fichier .ini
     if(isset($_GET['modify'])) {
         $modify = secure($_GET['modify']);
+
+        // TODO
     }
 
-    // Vérifier l'état d'une URL
+    // Vérifier l'état d'une URL (via formulaire)
     if(isset($_GET['url'])) {
         $url = secure($_GET['url']);
+
+        // TODO
     }
 
-    // Status - ajax - json
+    // Status : API
     if(isset($_GET['status'])) {
         $array = array();
         $array['time']   = date('H:i:s', time());
