@@ -9,14 +9,15 @@
  *       /\__/ /  __/ |   \ V /  __/ |  /\__/ / || (_| | |_| |_| \__ \
  *       \____/ \___|_|    \_/ \___|_|  \____/ \__\__,_|\__|\__,_|___/
  *
- * ServerStatus : Garder un oeil sur le status de vos serveurs à tout moment
- * Créé par Hennek, design inspiré de MCstatus (http://xpaw.ru/mcstatus/)
+ * ServerStatus : Garder un oeil sur le status de vos serveurs à tout moment.
+ * Créé par Hennek, concept adapté de Down for every one or just me, design
+ * inspiré de MCstatus (http://xpaw.ru/mcstatus/)
  *
  * @name         ServerStatus
- * @version      1.0
+ * @version      1.1
  * @author       Hennek
  * @project      https://github.com/Hennek/ServerStatus
- * @licence      Beerware (https://fr.wikipedia.org/wiki/Beerware)
+ * @licence      MIT
  *
  */
 
@@ -76,12 +77,21 @@
     $listOfServers = array();
     // TODO readConfigFile
     // Syntaxe suivante :
-    //   $listOfServers['name']['name']  = 'Description';
-    //   $listOfServers['name']['url']   = 'www.server.tld';
-    //   $listOfServers['name']['port']  = 80;
-    $listOfServers['git']['name'] = 'Github';
-    $listOfServers['git']['url']  = 'github.com';
-    $listOfServers['git']['port'] = 80;
+    //$listOfServers[] = array(
+    //                        'name' => 'Description',
+    //                        'url'  => 'www.server.tld',
+    //                        'port' => 80
+    //                    );
+    $listOfServers[] = array(
+                            'name' => 'Github',
+                            'url'  => 'github.com',
+                            'port' => 80
+                        );
+    $listOfServers[] = array(
+                            'name' => 'Google',
+                            'url'  => 'google.com',
+                            'port' => 80
+                        );
 
     // Préparation de l'affichage
     // Calcul de la largeur des bulles
@@ -94,20 +104,27 @@
     // Création des résultats avant l'affichage
     $result = array();
     foreach ($listOfServers as $key => $value) {
-        $result[$key] = pingDomain($value['url'], $value['port']);
+        $result[$value['name']] = pingDomain($value['url'], $value['port']);
     }
 
+    // Ajouter une entrée du fichier .url
     if(isset($_GET['add'])) {
         $add = secure($_GET['add']);
     }
 
+    // Supprimer une entrée du fichier .url
     if(isset($_GET['delete'])) {
         $delete = secure($_GET['delete']);
     }
 
-
+    // Modifier une entrée du fichier .url
     if(isset($_GET['modify'])) {
         $modify = secure($_GET['modify']);
+    }
+
+    // Vérifier l'état d'une URL
+    if(isset($_GET['url'])) {
+        $url = secure($_GET['url']);
     }
 
     // Status - ajax - json
@@ -134,15 +151,15 @@
     <!-- Icons -->
     <link rel="shortcut icon" type="image/x-icon" href="static/img/favicon.ico" />
 
-    <link rel="apple-touch-icon-precomposed" media="screen and (resolution: 326dpi)" href="static/img/serverstatusx114px.png" />
-    <link rel="apple-touch-icon-precomposed" media="screen and (resolution: 163dpi)" href="static/img/serverstatusx57px.png" />
-    <link rel="apple-touch-icon-precomposed" media="screen and (resolution: 132dpi)" href="static/img/serverstatusx72px.png" />
-
     <link rel="shortcut icon" sizes="1024x1024" href="tpl/img/serverstatusx1024.png">
     <link rel="shortcut icon" sizes="512x512" href="tpl/img/serverstatusx512.png">
     <link rel="shortcut icon" sizes="128x128" href="tpl/img/serverstatusx128.png">
     <link rel="shortcut icon" sizes="114x114" href="tpl/img/serverstatusx114.png">
     <link rel="shortcut icon" sizes="72x72" href="tpl/img/serverstatusx72.png">
+
+    <link rel="apple-touch-icon-precomposed" media="screen and (resolution: 326dpi)" href="static/img/serverstatusx114px.png" />
+    <link rel="apple-touch-icon-precomposed" media="screen and (resolution: 163dpi)" href="static/img/serverstatusx57px.png" />
+    <link rel="apple-touch-icon-precomposed" media="screen and (resolution: 132dpi)" href="static/img/serverstatusx72px.png" />
 
     <style>
         .grid .col {
@@ -193,10 +210,10 @@
 
         Dernière vérification : <span id="time">00:00:00</span>.
         Actualisation dans <span id="timer" class="note">15</span> seconde(s)<br />
-        <span id="info">Tout va bien ! N'est-ce pas merveilleux ?</span>
+        <span id="info">Loading ...</span>
     </footer>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.js" type="text/javascript"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
 <script type="text/javascript">
     update();
     window.setInterval(function() {
