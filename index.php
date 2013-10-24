@@ -21,168 +21,240 @@
  *
  */
 
-    header('Content-Type: text/html; charset=utf-8');
-    header("Set-Cookie: name=value; httpOnly");
-    date_default_timezone_set('Europe/Brussels');
-    setlocale(LC_ALL, 'fr_FR');
+/* CONFIGURATION
+ ------------------------------------------- */
 
-    define('_VERSION', '1.1');
-    define('PATH',     'data/');
-    define('CONFIG',   'list.ini');
+header('Content-Type: text/html; charset=utf-8');
+header("Set-Cookie: name=value; httpOnly");
 
-    /**
-     * Script permettant de lire un fichier de config utilisateur
-     * @param  string    chemin d'accès au dossier du fichier
-     * @return array     tableau contenant chaque ligne du fichier
-     */
-    function readFileConfig() {
-        $values   = array();
-        $lineFile = file(PATH . CONFIG);
+date_default_timezone_set('Europe/Brussels');
+setlocale(LC_ALL, 'fr_FR');
 
-        foreach($lineFile as $line) {
-            // Pour chaque ligne, on casse la chaîne et on stocke
-            // le résultat dans des defines si ce n'est pas un commentaire
-            if(!preg_match('#\#(.*)#isU', $line)) {
-                $infos = explode('=', $line);
+define('_VERSION', '1.1');
+define('_AUTHOR',  'Hennek');
+define('_LICENSE', 'MIT');
 
-                if(count($infos) == 2) {
-                    $infos[1] = str_replace('\n', '', $infos[1]);
+define('PASSWORD', 'foobar');
 
-                    $key      = trim($infos[0]);
-                    $value    = trim($infos[1]);
-                    $values[] = array($key, $value);
-                }
-            }
-        }
+define('PATH',     'data/');
+define('CONFIG',   'list.ini');
+define('TIMEOUT',  2);
 
-        if(empty($values))
-            return 'empty';
+/**
+ * Script permettant de lire un fichier de config utilisateur
+ * @param  string    chemin d'accès au dossier du fichier
+ * @return array     tableau contenant chaque ligne du fichier
+ */
+function readFileConfig() {
+    $value = parse_ini_file(PATH . CONFIG);
+    return !empty($value) ? updateArrayConfig($value) : null;
+}
 
-        return $values;
+/**
+ * Modifie le tableau pour le rendre conforme
+ * @param  array    tableau à traiter
+ * @return array    nouveau tableau conforme à l'algorithme
+ */
+function updateArrayConfig($value) {
+    for($i = 0, $nbUrl  = count($value['url']); $i < $nbUrl; $i++)
+        $listOfServers[] = array(
+            'url'   => clearURL($value['url'][$i]),
+            'name'  => (isset($value['name'][$i]) && !empty($value['name'][$i])) ? $value['name'][$i] : $value['url'][$i],
+            'port'  => (isset($value['port'][$i]) && !empty($value['port'][$i])) ? (int)$value['port'][$i] : 80
+        );
+
+    return $listOfServers;
+}
+
+/**
+ * Permet d'écrire un fichier.
+ * @param  string    le contenu du fichier
+ * @return boolean   statut de l'enregistrement
+ */
+function addLineConfig($string) {
+    return file_put_contents(PATH . CONFIG, utf8_decode($string) . "\n", FILE_APPEND);
+}
+
+/**
+ * Permet d'écrire un fichier.
+ * @return boolean   statut de l'opération
+ */
+function deleteConfig() {
+    return unlink(PATH . CONFIG);
+}
+
+/**
+ * Permet de sécuriser les données reçues
+ * @param  string    la chaîne à vérifier
+ * @return string    la chaîne vérifiée
+ */
+function secure($str) {
+    return htmlspecialchars($str);
+}
+
+/**
+ * Permet de nettoyer l'URL avant de faire le ping
+ * @param  string   l'url à traiter
+ * @return string   l'url démunie des éléments inutiles
+ */
+function clearURL($str) {
+    $str = str_replace("http://","", strtolower($str));
+    $str = str_replace("https://","", strtolower($str));
+    $str = str_replace("www.","", strtolower($str));
+
+     return $str;
+}
+
+/**
+ * Permet de retirer tous les accents ainsi que les espaces
+ * @param  string   la chaîne de caractères à traiter
+ * @return string   la chaîne de caractères dont tous les accents et espaces ont été retiré
+ */
+function sanitizeName($str) {
+    $str = preg_replace('`\s+`', '_', trim($str));
+    $str = str_replace("'", "_", $str);
+    $str = preg_replace('`_+`', '_', trim($str));
+
+    return strtr($str, "ÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèéêëÇçÌÍÎÏìíîïÙÚÛÜùúûüÿÑñ",
+                       "aaaaaaaaaaaaooooooooooooeeeeeeeecciiiiiiiiuuuuuuuuynn");
+}
+
+/**
+ * Ping ... Pong :)
+ * @param  string    domaine à tester
+ * @param  int       port du serveur (80 par défaut)
+ * @param  int       timeout (2 par défaut)
+ * @return int       temps en ms
+ */
+function pingDomain($domain, $port = 80, $timeout = TIMEOUT) {
+    $starttime = microtime(true);
+    $file      = @fsockopen($domain, $port, $errno, $errstr, $timeout);
+    $stoptime  = microtime(true);
+    $status    = -1;
+
+    if ($file) {
+        fclose($file);
+
+        $status = ($stoptime - $starttime) * 1000;
+        $status = floor($status);
     }
 
-    /**
-     * Permet d'écrire un fichier.
-     * @param  string    le contenu du fichier
-     * @return boolean   statut de l'enregistrement
-     */
-    function addLineConfig($string) {
-        return file_put_contents(PATH . CONFIG, utf8_decode($string) . "\n", FILE_APPEND);
-    }
+    return $status;
+}
 
-    /**
-     * Permet d'écrire un fichier.
-     * @return boolean   statut de l'opération
-     */
-    function deleteConfig() {
-        return unlink(PATH . CONFIG);
-    }
+/**
+ * API
+ */
+function getInfoDomain($result, $exit = true) {
+    $array = array();
+    $array['time']   = date('H:i:s', time());
+    $array['result'] = $result;
 
-    /**
-     * Permet de sécuriser les données reçues
-     * @param  string    la chaîne à vérifier
-     * @return string    la chaîne vérifiée
-     */
-    function secure($str) {
-        return htmlspecialchars($str);
-    }
-
-    /**
-     * Ping ... Pong :)
-     * @param  string    domaine à tester
-     * @param  int       port du serveur (80 par défaut)
-     * @param  int       timeout (10 par défaut)
-     * @return int       temps en ms
-     */
-    function pingDomain($domain, $port = 80, $timeout = 10) {
-        $starttime = microtime(true);
-        $file      = @fsockopen($domain, $port, $errno, $errstr, $timeout);
-        $stoptime  = microtime(true);
-        $status    = -1;
-
-        if ($file) {
-            fclose($file);
-
-            $status = ($stoptime - $starttime) * 1000;
-            $status = floor($status);
-        }
-
-        return $status;
-    }
-
-
-    // Liste des domaines ainsi que le nom à tester
-    $listOfServers = array();
-    // TODO readConfigFile
-    // Syntaxe suivante (en attendant la 1.1) :
-    //$listOfServers[] = array(
-    //                        'name' => 'Description',
-    //                        'url'  => 'www.server.tld',
-    //                        'port' => 80
-    //                    );
-    $listOfServers[] = array(
-                            'name' => 'Github',
-                            'url'  => 'github.com',
-                            'port' => 80
-                        );
-    $listOfServers[] = array(
-                            'name' => 'Google',
-                            'url'  => 'google.com',
-                            'port' => 80
-                        );
-
-    // Préparation de l'affichage
-    // Calcul de la largeur des bulles
-    $cptServer = count($listOfServers);
-    if($cptServer == 1) $width = "width: 100%; *width: 100%;";
-    elseif($cptServer == 2) $width = "width: 50%; *width: 50%;";
-    elseif($cptServer % 3 == 0 && $cptServer % 4 != 0)  $width = "width: 33%; *width: 33%;";
-    else $width = "width: 25%; *width: 25%;";
-
-    // Création des résultats avant l'affichage
-    $result = array();
-    foreach ($listOfServers as $key => $value) {
-        $result[$value['name']] = pingDomain($value['url'], $value['port']);
-    }
-
-    // Ajouter une entrée du fichier .ini
-    if(isset($_GET['add'])) {
-        $add = secure($_GET['add']);
-
-        // TODO
-    }
-
-    // Supprimer une entrée du fichier .ini
-    if(isset($_GET['delete'])) {
-        $delete = secure($_GET['delete']);
-
-        // TODO
-    }
-
-    // Modifier une entrée du fichier .ini
-    if(isset($_GET['modify'])) {
-        $modify = secure($_GET['modify']);
-
-        // TODO
-    }
-
-    // Vérifier l'état d'une URL (via formulaire)
-    if(isset($_GET['url'])) {
-        $url = secure($_GET['url']);
-
-        // TODO
-    }
-
-    // Status : API
-    if(isset($_GET['status'])) {
-        $array = array();
-        $array['time']   = date('H:i:s', time());
-        $array['result'] = $result;
-
+    if($exit) {
         die(json_encode($array));
         exit();
+    } else {
+        return $array;
+    }
+}
+
+/**
+ *
+ *   ######  ########    ###    ########  ########
+ *  ##    ##    ##      ## ##   ##     ##    ##
+ *  ##          ##     ##   ##  ##     ##    ##
+ *   ######     ##    ##     ## ########     ##
+ *        ##    ##    ######### ##   ##      ##
+ *  ##    ##    ##    ##     ## ##    ##     ##
+ *   ######     ##    ##     ## ##     ##    ##
+ *
+ */
+
+    /**
+     * Le formulaire a été envoyé. Deux cas sont possibles :
+     * 1. On souhaite ajouter un/des site(s) aux favoris.
+     * 2. On souhaite faire un appel à l'API.
+     * NOTE : le symbole séparateur est "|", seul le champ url est obligatoire.
+     */
+    if(isset($_GET['url']) && !empty($_GET['url'])) {
+        // Extract
+        $value['url']  = secure($_GET['url']);
+        $value['name'] = isset($_GET['name']) ? secure($_GET['name']) : '';
+        $value['port'] = isset($_GET['port']) ? secure($_GET['port']) : '';
+
+        $value['url']  = explode("|", $value['url']);
+        $value['name'] = explode("|", $value['name']);
+        $value['port'] = explode("|", $value['port']);
+
+        // Création de la liste des serveurs à traiter
+        $listOfServers = updateArrayConfig($value);
+
+        if(isset($_GET['favoris']) && $_GET['favoris'] == "on") {
+            // Nouveau(x) site(s) : mettre à jour le fichier de config
+            $content = "";
+            foreach ($listOfServers as $server) {
+                $content .= <<<EOD
+[site]
+url[]={$server['url']}
+name[]={$server['name']}
+port[]={$server['port']}
+
+EOD;
+            }
+
+            if(!addLineConfig($content))
+                header("Location: " . $_SERVER['SCRIPT_NAME'] . "?msg=KO");
+            else
+                header("Location: " . $_SERVER['SCRIPT_NAME'] . "?msg=OK");
+            exit();
+        } else {
+            // On fait appel à l'API
+            foreach ($listOfServers as $server)
+                $api[$server['name']] = pingDomain($server['url'], $server['port']);
+
+            header("Location: " . $_SERVER['SCRIPT_NAME'] . "?msg=[@TODO]" . serialize(getInfoDomain($api, false)));
+            exit();
+        }
     }
 
+    /**
+     * Lecture du fichier de configuration. Si le fichier existe, alors on le
+     * charge, sinon on utilise une valeur test.
+     */
+    $listOfServers = readFileConfig();
+    if(empty($listOfServers)) {
+        $listOfServers[] = array(
+            'url'  => 'github.com',
+            'name' => 'Github',
+            'port' => 80
+        );
+    }
+
+    /**
+     * Création du tableau contenant les résultats de l'opération
+     * Partie de ping-pong pour chaque serveur de ce tableau.
+     */
+    $result    = array();
+    $nbServers = count($listOfServers);
+    foreach ($listOfServers as $server)
+        $result[sanitizeName($server['name'])] = pingDomain($server['url'], $server['port']);
+
+    /**
+     * Méthode AJAX qui permet de récupérer le nouveau statut de chaque serveur
+     * après chaque 't' secondes où 't' est le nombre de secondes avant le
+     * nouvel appel à cette méthode. (Vous suivez ?)
+     */
+    if(isset($_GET['status']))
+        getInfoDomain($result);
+
+    /**
+     * Préparation de l'affichage des "bulles d'informations"
+     * Calcul de la grille pour la disposition des éléments.
+     */
+    if($nbServers == 1) $width = "width: 100%; *width: 100%;";
+    elseif($nbServers == 2) $width = "width: 50%; *width: 50%;";
+    elseif($nbServers % 3 == 0 && $nbServers % 4 != 0)  $width = "width: 33%; *width: 33%;";
+    else $width = "width: 25%; *width: 25%;";
 ?><!DOCTYPE html>
 <html lang="fr-FR">
 <head>
@@ -195,13 +267,11 @@
     <link rel="stylesheet" type="text/css" href="static/css/default.css" />
 
     <!-- Icons -->
-    <link rel="shortcut icon" type="image/x-icon" href="static/img/favicon.ico" />
-
-    <link rel="shortcut icon" sizes="1024x1024" href="tpl/img/serverstatusx1024.png">
-    <link rel="shortcut icon" sizes="512x512" href="tpl/img/serverstatusx512.png">
-    <link rel="shortcut icon" sizes="128x128" href="tpl/img/serverstatusx128.png">
-    <link rel="shortcut icon" sizes="114x114" href="tpl/img/serverstatusx114.png">
-    <link rel="shortcut icon" sizes="72x72" href="tpl/img/serverstatusx72.png">
+    <link rel="shortcut icon" sizes="1024x1024" href="static/img/serverstatusx1024.png">
+    <link rel="shortcut icon" sizes="512x512" href="static/img/serverstatusx512.png">
+    <link rel="shortcut icon" sizes="128x128" href="static/img/serverstatusx128.png">
+    <link rel="shortcut icon" sizes="114x114" href="static/img/serverstatusx114.png">
+    <link rel="shortcut icon" sizes="72x72" href="static/img/serverstatusx72.png">
 
     <link rel="apple-touch-icon-precomposed" media="screen and (resolution: 326dpi)" href="static/img/serverstatusx114px.png" />
     <link rel="apple-touch-icon-precomposed" media="screen and (resolution: 163dpi)" href="static/img/serverstatusx57px.png" />
@@ -217,11 +287,7 @@
 
     <section>
 
-        <h1>Current status servers</h1>
-
-        <div class="add-server">
-
-        </div>
+        <h1><a href="<?php echo $_SERVER['SCRIPT_NAME']; ?>">Current status of YOUR servers !</a></h1>
 
         <noscript>
             <p>
@@ -230,20 +296,63 @@
             </p>
         </noscript>
 
+        <?php
+            if(isset($_GET['msg']) && !empty($_GET['msg'])) {
+                echo '<div class="alert">';
+                switch (secure($_GET['msg'])) {
+                    case 'OK': echo 'L\'opération s\'est parfaitement déroulée !'; break;
+                    case 'KO': echo '<span class="alert-error">Une erreur est survenue durant l\'opération, veuillez réessayer ultérieurement</span>'; break;
+                    default:   echo secure($_GET['msg']); break;
+                }
+                echo '</div>';
+            }
+        ?>
+
         <div class="grid">
             <?php foreach ($listOfServers as $key => $value): ?>
             <div class="col">
-            <div class="info-bulle" id="block-<?php echo $value['name']; ?>">
+            <div class="info-bulle" id="block-<?php echo sanitizeName($value['name']); ?>">
                 <span>
                     <em><?php echo $value['name']; ?></em>
-                    <span id="status-<?php echo $value['name']; ?>">Loading ...</span>
+                    <span id="status-<?php echo sanitizeName($value['name']); ?>">Loading ...</span>
                 </span>
             </div>
             <div class="info-sup">
-                Temps de réponse : <span id="ms-<?php echo $value['name']; ?>">∞</span>ms
+                Temps de réponse : <span id="ms-<?php echo sanitizeName($value['name']); ?>">∞</span>ms
             </div>
             </div>
             <?php endforeach; ?>
+        </div>
+
+        <div class="add-server">
+            <form method="get" id="testSite">
+                <fieldset>
+                    <legend>Test on a new server</legend>
+                        <label>URL du serveur à tester* :</label>
+                        <input type="text" name="url" id="server-url" placeholder="URL du serveur" />
+                        <br />
+
+                        <div class="grid">
+                            <div class="col-server">
+                                <label>Clef à donner à l'url :</label>
+                                <input type="text" name="name" id="server-name" placeholder="Nom du site (ex: Google)" />
+                                <br />
+                            </div>
+                            <div class="col-port">
+                                <label>Port à tester :</label>
+                                <input type="number" name="port" id="server-port" placeholder="80" />
+                                <br />
+                            </div>
+                        </div>
+
+                        <div class="col-favoris">
+                            <input type="checkbox" name="favoris" id="favoris" />
+                            <label for="favoris" class="label-inline" >Enregistrer le site dans les favoris ?</label>
+                        </div>
+
+                        <input type="submit" value="Tester" id="button" /><!-- TODO -->
+                </fieldset>
+            </form>
         </div>
     </section>
 
@@ -256,86 +365,87 @@
 
         Dernière vérification : <span id="time">00:00:00</span>.
         Actualisation dans <span id="timer" class="note">15</span> seconde(s)<br />
-        <span id="info">Loading ...</span>
+        <span id="info">Loading ...</span><br />
+        En savoir davantage sur l'<a href="https://github.com/Hennek/ServerStatus/blob/master/README.md">API</a> ?
     </footer>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
 <script type="text/javascript">
-    update();
-    window.setInterval(function() {
-        timer = $("#timer");
+update();
+window.setInterval(function() {
+    timer = $("#timer");
 
-        if(parseInt(timer.text()) > 0)
-            timer.html(parseInt(timer.html()) - 1);
+    if(parseInt(timer.text()) > 0)
+        timer.html(parseInt(timer.html()) - 1);
 
-        if(parseInt(timer.text()) <= 0) {
-            update();
-            timer.html("15");
-        }
-    }, 1000);
-
-    function update() {
-        $.ajax({
-            type: "GET",
-            url: "?status",
-            async: true,
-            success:function(json) {
-                array  = $.parseJSON(json);
-                time   = array.time;
-                result = array.result;
-
-                var countDown = 0;
-                var countSlow = 0;
-
-                var msgOK    = "Tout va bien ! N'est-ce pas merveilleux ?";
-                var msgSlow  = "Argh, houston, we've got a problem !";
-                var msgVSlow = "Bon, bon, le réseau est un peu lent !";
-                var msgDown  = "Je ne sais pas s'il faut paniquer, mais, il y a un vrai problème !";
-
-                var online   = "Online";
-                var slow     = "Slow";
-                var vSlow    = "Very slow !";
-                var down     = "Down !";
-
-                $.each(result, function (index) {
-                    statusInfo = $("#info");
-                    blockVar   = $("#block-" + index);
-                    statusVar  = $("#status-" + index);
-                    info       = $("#info");
-
-                    $("#ms-" + index).html(this);
-                    $("#time").html(time);
-
-                    blockVar.removeClass('info-bulle-slow info-bulle-down');
-                    statusVar.html(online);
-                    statusInfo.html(msgOK);
-
-                    if(this == -1) {
-                        blockVar.addClass('info-bulle-down');
-                        statusVar.html(down);
-                        countDown++;
-                    }
-
-                    if(this >= 100) {
-                        blockVar.addClass('info-bulle-slow');
-                        statusVar.html(slow);
-                        countSlow++;
-                    }
-
-                    if(this >= 200) {
-                        blockVar.addClass('info-bulle-slow');
-                        statusVar.html(vSlow);
-                        countSlow++;
-                    }
-                });
-
-                if(countDown == 0 && countSlow == 0) info.html(msgOK);
-                if(countDown > 0) info.html("Argh, houston, we've got a problem !");
-                if(countSlow > 0) info.html("Bon, bon, le réseau est un peu lent !");
-                if(countDown > 0 && countSlow > 0) info.html("Je ne sais pas s'il faut paniquer, mais, il y a un vrai problème !");
-            }
-        });
+    if(parseInt(timer.text()) <= 0) {
+        update();
+        timer.html("15");
     }
+}, 1000);
+
+function update() {
+    $.ajax({
+        type: "GET",
+        url: "?status",
+        async: true,
+        success:function(json) {
+            array  = $.parseJSON(json);
+            time   = array.time;
+            result = array.result;
+
+            var countDown = 0;
+            var countSlow = 0;
+
+            var msgOK    = "Tout va bien dans le meilleur des mondes ! N'est-ce pas merveilleux ?";
+            var msgSlow  = "Argh, Houston, we've got a problem !";
+            var msgVSlow = "Bon, bon, le réseau est un peu lent !";
+            var msgDown  = "Je ne sais pas s'il faut paniquer, mais on dirait qu'il y a un problème !";
+
+            var online   = "En ligne";
+            var slow     = "Slow";
+            var vSlow    = "Very slow !";
+            var down     = "Down !";
+
+            $.each(result, function (index) {
+                statusInfo = $("#info");
+                blockVar   = $("#block-" + index);
+                statusVar  = $("#status-" + index);
+                info       = $("#info");
+
+                $("#ms-" + index).html(this);
+                $("#time").html(time);
+
+                blockVar.removeClass('info-bulle-slow info-bulle-down');
+                statusVar.html(online);
+                statusInfo.html(msgOK);
+
+                if(this == -1) {
+                    blockVar.addClass('info-bulle-down');
+                    statusVar.html(down);
+                    countDown++;
+                }
+
+                if(this >= 100) {
+                    blockVar.addClass('info-bulle-slow');
+                    statusVar.html(slow);
+                    countSlow++;
+                }
+
+                if(this >= 200) {
+                    blockVar.addClass('info-bulle-slow');
+                    statusVar.html(vSlow);
+                    countSlow++;
+                }
+            });
+
+            if(countDown == 0 && countSlow == 0) info.html(msgOK);
+            if(countDown > 0) info.html("Argh, houston, we've got a problem !");
+            if(countSlow > 0) info.html("Bon, bon, le réseau est un peu lent !");
+            if(countDown > 0 && countSlow > 0) info.html("Je ne sais pas s'il faut paniquer, mais, il y a un vrai problème !");
+        }
+    });
+}
 </script>
 </body>
 </html>

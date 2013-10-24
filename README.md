@@ -89,7 +89,9 @@ Aucun projet n'est parfait, c'est pour ça que cette liste est présente. N'hés
 
 * ☑ Pinger un domaine précis ;
 * ☑ Prendre en compte le temps de réponse (`ms`) ;
-* ☑ Administration : ajout, modification et suppression (gestion des favoris) ;
-* ☑ API : mettre en place une API simple d'utilisation ; 
+* ☑ Système de favoris ;
+* ☑ API : mettre en place une API simple d'utilisation ;
+* ☐ Administration (requiert un mot de passe) : ajout, modification et suppression (gestion des favoris) ; 
 * ☐ Statistique : taux d'uptime par semaine pour chacun de vos sites ;
+* ☐ Multilingue ;
 * ☐ Vos idées : si le projet vous plaît, forkez-le !
