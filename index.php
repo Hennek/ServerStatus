@@ -10,8 +10,9 @@
  *       \____/ \___|_|    \_/ \___|_|  \____/ \__\__,_|\__|\__,_|___/
  *
  * ServerStatus : Garder un oeil sur le status de vos serveurs à tout moment.
- * Créé par Hennek, concept adapté de Down for every one or just me, design
- * inspiré de MCstatus (http://xpaw.ru/mcstatus/)
+ * Créé par Hennek, concept adapté de Down for every one or just
+ * me (http://www.downforeveryoneorjustme.com/), design inspiré de
+ * MCstatus (http://xpaw.ru/mcstatus/)
  *
  * @name         ServerStatus
  * @version      1.1
@@ -358,7 +359,7 @@ EOD;
 
     <footer class="dashed clear">
         <div class="footer-right">
-            CopyLeft (<a href="https://github.com/Hennek/ServerStatus/blob/master/LICENSE">MIT</a>) <?php echo date('Y', time()); ?> — <a href="https://twitter.com/Hennek_">Hennek</a> — v<?php echo _VERSION; ?><br />
+            CopyLeft (MIT) <?php echo date('Y', time()); ?> — <a href="https://twitter.com/Hennek_">Hennek</a> — v<?php echo _VERSION; ?><br />
             <a href="https://github.com/Hennek/ServerStatus/issues">Report Issue</a> •
             <a href="https://github.com/Hennek/ServerStatus">Source</a>
         </div>

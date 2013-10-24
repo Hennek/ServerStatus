@@ -63,6 +63,7 @@ strong { font-weight: bold; }
 
 section {
     width: 75%;
+    max-width: 1440px;
     margin: auto;
 }
 
