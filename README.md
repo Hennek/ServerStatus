@@ -48,7 +48,11 @@ Voici la liste des choses que vous pouvez effectuer :
 
 #### Résultats retournés
 
-Les résultats retournés sont sous la forme suivante :
+Les appels à l'API sont simples, trois champs sont nécessaires. A savoir, `url`, `name`, `port`. Ainsi :
+
+    ?url=github.com|google.be&name=Github|Google
+
+donnera le résultat suivant :
 
     {
 	   "time":"15:07:31",
@@ -62,6 +66,8 @@ Voici un exemple de résultat, mais à quoi correspond chacun des champs ?
 
 * `time`: correspond à l'heure à laquelle le résultat est retourné.
 * `result` est le tableau comportant les temps de réponse de chaque site.
+
+Le seul champ obligatoire est `url`. Dans ce cas, `name` prendra la même valeur que l'url et le test se fera par défaut sur le port 80. Comme vous pouvez le remarquer, il est possible de tester plusieurs sites, il vous suffit d'utiliser le séparateur `|` pour ajouter autant d'url que vous le souhaitez.
 
 #### Gestion des erreurs
 

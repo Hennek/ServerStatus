@@ -1,9 +1,4 @@
 @font-face {
-    font-family: 'Kreon'; font-style: normal; font-weight: 300;
-    src: url('../font/Kreon.woff') format('woff');
-}
-
-@font-face {
     font-family: 'Source Sans Pro';
     font-style: normal;
     font-weight: 200;
