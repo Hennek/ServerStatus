@@ -9,8 +9,8 @@
  *       /\__/ /  __/ |   \ V /  __/ |  /\__/ / || (_| | |_| |_| \__ \
  *       \____/ \___|_|    \_/ \___|_|  \____/ \__\__,_|\__|\__,_|___/
  *
- * ServerStatus : Garder un oeil sur le status de vos serveurs à tout moment.
- * Créé par Hennek, concept adapté de Down for every one or just
+ * ServerStatus : Garder un oeil sur l'état de vos serveurs à tout moment.
+ * Créé par Hennek, concept adapté de Down for everyone or just
  * me (http://www.downforeveryoneorjustme.com/), design inspiré de
  * MCstatus (http://xpaw.ru/mcstatus/)
  *
@@ -114,6 +114,7 @@ function clearURL($str) {
 function sanitizeName($str) {
     $str = preg_replace('`\s+`', '_', trim($str));
     $str = str_replace("'", "_", $str);
+    $str = str_replace(".", "_", $str);
     $str = preg_replace('`_+`', '_', trim($str));
 
     return strtr($str, "ÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèéêëÇçÌÍÎÏìíîïÙÚÛÜùúûüÿÑñ",
@@ -213,8 +214,12 @@ EOD;
             foreach ($listOfServers as $server)
                 $api[$server['name']] = pingDomain($server['url'], $server['port']);
 
-            header("Location: " . $_SERVER['SCRIPT_NAME'] . "?msg=[@TODO]" . serialize(getInfoDomain($api, false)));
-            exit();
+            if(isset($_GET['notAPI'])) {
+                header("Location: " . $_SERVER['SCRIPT_NAME'] . "?msg=[@TODO]" . serialize(getInfoDomain($api, false)));
+                exit();
+            } else {
+                getInfoDomain($api);
+            }
         }
     }
 
@@ -351,7 +356,8 @@ EOD;
                             <label for="favoris" class="label-inline" >Enregistrer le site dans les favoris ?</label>
                         </div>
 
-                        <input type="submit" value="Tester" id="button" /><!-- TODO -->
+                        <input type="hidden" name="notAPI" id="server-port" value="notAPI" />
+                        <input type="submit" value="Tester" id="button" />
                 </fieldset>
             </form>
         </div>

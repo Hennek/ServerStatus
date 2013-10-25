@@ -6,7 +6,7 @@
 
 Vous voulez savoir si le site auquel vous tentez d'accéder est toujours disponible ? Qu'il ne soit pas *down* ? Avec **ServerStatus**, c'est simple comme bonjour ! Vous rentrez l'adresse de votre choix et le script vérifiera pour vous. Une **API** est également disponible, elle vous permettra de récupérer les résultats au format `json` et d'obtenir donc les informations en temps réel.
 
-ServerStatus comble parfaitement les petits manques de [Down for every one or just me ?](http://www.downforeveryoneorjustme.com/) puisque vous pouvez, entre autre, enregistrer une liste de site. ServerStatus chargera cette liste lorsque vous vous connecterez et vous donner les temps de réponses de chaque site.
+ServerStatus comble parfaitement les petits manques de [Down for everyone or just me ?](http://www.downforeveryoneorjustme.com/) puisque vous pouvez, entre autre, enregistrer une liste de site. ServerStatus chargera cette liste lorsque vous vous connecterez et vous donner les temps de réponses de chaque site.
 
 ## Fonctionnement de ServerStatus
 
@@ -91,13 +91,13 @@ ServerStatus est un projet open source :
 
 ### Todo List
 
-Aucun projet n'est parfait, c'est pour ça que cette liste est présente. N'hésitez pas à participer au projet :
+Aucun projet n'est parfait, c'est pour ça que cette liste est présente. N'hésitez pas à l'améliorer :
 
 * ☑ Pinger un domaine précis ;
 * ☑ Prendre en compte le temps de réponse (`ms`) ;
 * ☑ Système de favoris ;
 * ☑ API : mettre en place une API simple d'utilisation ;
-* ☐ Administration (requiert un mot de passe) : ajout, modification et suppression (gestion des favoris) ; 
+* ☐ Administration (requiert un mot de passe) : ajout, modification et suppression (gestion des favoris) ;
 * ☐ Statistique : taux d'uptime par semaine pour chacun de vos sites ;
 * ☐ Multilingue ;
 * ☐ Vos idées : si le projet vous plaît, forkez-le !
