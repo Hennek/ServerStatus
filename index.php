@@ -221,46 +221,46 @@ EOD;
                 getInfoDomain($api);
             }
         }
+    } else {
+        /**
+         * Lecture du fichier de configuration. Si le fichier existe, alors on le
+         * charge, sinon on utilise une valeur test.
+         */
+        $listOfServers = readFileConfig();
+        if(empty($listOfServers)) {
+            $listOfServers[] = array(
+                'url'  => 'github.com',
+                'name' => 'Github',
+                'port' => 80
+            );
+        }
+
+        /**
+         * Création du tableau contenant les résultats de l'opération
+         * Partie de ping-pong pour chaque serveur de ce tableau.
+         */
+        $result    = array();
+        $nbServers = count($listOfServers);
+        foreach ($listOfServers as $server)
+            $result[sanitizeName($server['name'])] = pingDomain($server['url'], $server['port']);
+
+        /**
+         * Préparation de l'affichage des "bulles d'informations"
+         * Calcul de la grille pour la disposition des éléments.
+         */
+        if($nbServers == 1) $width = "width: 100%; *width: 100%;";
+        elseif($nbServers == 2) $width = "width: 50%; *width: 50%;";
+        elseif($nbServers % 3 == 0 && $nbServers % 4 != 0)  $width = "width: 33%; *width: 33%;";
+        else $width = "width: 25%; *width: 25%;";
+
+        /**
+         * Méthode AJAX qui permet de récupérer le nouveau statut de chaque serveur
+         * après chaque 't' secondes où 't' est le nombre de secondes avant le
+         * nouvel appel à cette méthode. (Vous suivez ?)
+         */
+        if(isset($_GET['status']))
+            getInfoDomain($result);
     }
-
-    /**
-     * Lecture du fichier de configuration. Si le fichier existe, alors on le
-     * charge, sinon on utilise une valeur test.
-     */
-    $listOfServers = readFileConfig();
-    if(empty($listOfServers)) {
-        $listOfServers[] = array(
-            'url'  => 'github.com',
-            'name' => 'Github',
-            'port' => 80
-        );
-    }
-
-    /**
-     * Création du tableau contenant les résultats de l'opération
-     * Partie de ping-pong pour chaque serveur de ce tableau.
-     */
-    $result    = array();
-    $nbServers = count($listOfServers);
-    foreach ($listOfServers as $server)
-        $result[sanitizeName($server['name'])] = pingDomain($server['url'], $server['port']);
-
-    /**
-     * Méthode AJAX qui permet de récupérer le nouveau statut de chaque serveur
-     * après chaque 't' secondes où 't' est le nombre de secondes avant le
-     * nouvel appel à cette méthode. (Vous suivez ?)
-     */
-    if(isset($_GET['status']))
-        getInfoDomain($result);
-
-    /**
-     * Préparation de l'affichage des "bulles d'informations"
-     * Calcul de la grille pour la disposition des éléments.
-     */
-    if($nbServers == 1) $width = "width: 100%; *width: 100%;";
-    elseif($nbServers == 2) $width = "width: 50%; *width: 50%;";
-    elseif($nbServers % 3 == 0 && $nbServers % 4 != 0)  $width = "width: 33%; *width: 33%;";
-    else $width = "width: 25%; *width: 25%;";
 ?><!DOCTYPE html>
 <html lang="fr-FR">
 <head>
@@ -284,9 +284,7 @@ EOD;
     <link rel="apple-touch-icon-precomposed" media="screen and (resolution: 132dpi)" href="static/img/serverstatusx72px.png" />
 
     <style>
-        .grid .col {
-            <?php echo $width; ?>
-        }
+        .grid .col { <?php echo $width; ?> }
     </style>
 </head>
 <body>
@@ -296,10 +294,7 @@ EOD;
         <h1><a href="<?php echo $_SERVER['SCRIPT_NAME']; ?>">Current status of YOUR servers !</a></h1>
 
         <noscript>
-            <p>
-                Javascript est désactivé. Le site ne pourra pas fonctionner.<br />
-                Activez-le pour pouvoir en profiter !
-            </p>
+            <p>Javascript est désactivé. Le site ne pourra pas fonctionner.<br />Activez-le pour pouvoir en profiter !</p>
         </noscript>
 
         <?php
@@ -317,15 +312,15 @@ EOD;
         <div class="grid">
             <?php foreach ($listOfServers as $key => $value): ?>
             <div class="col">
-            <div class="info-bulle" id="block-<?php echo sanitizeName($value['name']); ?>">
-                <span>
-                    <em><?php echo $value['name']; ?></em>
-                    <span id="status-<?php echo sanitizeName($value['name']); ?>">Loading ...</span>
-                </span>
-            </div>
-            <div class="info-sup">
-                Temps de réponse : <span id="ms-<?php echo sanitizeName($value['name']); ?>">∞</span>ms
-            </div>
+                <div class="info-bulle" id="block-<?php echo sanitizeName($value['name']); ?>">
+                    <span>
+                        <em><?php echo $value['name']; ?></em>
+                        <span id="status-<?php echo sanitizeName($value['name']); ?>">Loading ...</span>
+                    </span>
+                </div>
+                <div class="info-sup">
+                    Temps de réponse : <span id="ms-<?php echo sanitizeName($value['name']); ?>">∞</span>ms
+                </div>
             </div>
             <?php endforeach; ?>
         </div>
@@ -336,7 +331,6 @@ EOD;
                     <legend>Test on a new server</legend>
                         <label>URL du serveur à tester* :</label>
                         <input type="text" name="url" id="server-url" placeholder="URL du serveur" />
-                        <br />
 
                         <div class="grid">
                             <div class="col-server">
@@ -350,7 +344,6 @@ EOD;
                                 <br />
                             </div>
                         </div>
-
                         <div class="col-favoris">
                             <input type="checkbox" name="favoris" id="favoris" />
                             <label for="favoris" class="label-inline" >Enregistrer le site dans les favoris ?</label>
